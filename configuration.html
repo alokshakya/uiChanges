@@ -221,7 +221,7 @@
 
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
 
-                                                <input class="form-control" size="30" type="text" id="newIp">
+                                                <input class="form-control" size="30" type="text" name="newIp">
 
                                             </div>
 
@@ -229,7 +229,7 @@
 
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
 
-                                                <input class="form-control" size="30" type="text">
+                                                <input class="form-control" size="30" name="newIp" type="text">
 
                                             </div>
 
@@ -237,7 +237,7 @@
 
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
 
-                                                    <input class="form-control" size="30" type="text">
+                                                    <input class="form-control" size="30" name="newIp" type="text">
 
                                             </div>
 
@@ -819,12 +819,16 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
             function enableDisable(value){
                 console.log('enableDisable fun triggered ');
                 console.log('value '+value);
-                var dd = document.getElementById('newIp');
+                var dd = document.getElementsByName('newIp');
                 if(value=='dhcp'){
-                    dd.setAttribute('disabled','disabled');
+                    for(let i=0; i< dd.length; i++){
+                        dd[i].setAttribute('disabled','disabled');
+                    }
                 }
                 else{
-                    dd.removeAttribute('disabled');
+                    for(let i=0; i< dd.length; i++){
+                        dd[i].removeAttribute('disabled');
+                    }
                 }
             };
 
