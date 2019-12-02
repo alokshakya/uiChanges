@@ -86,7 +86,7 @@
                            <div id="collapseSix" class="panel-collapse collapse" role="tabpanel">
                                <div class="panel-body">
                                    <div class="col-md-6 p-0 mtb-20">
-                                    <div class="commonform">
+                                    <div class="commonform" id="internalPorts">
 
                                        <div class="form-group col-xs-12 col-md-12">
                                             <label class="control-label col-xs-12 col-sm-4 col-md-5"><b>Port</b></label>
@@ -514,97 +514,7 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
     </script>
 
 <script>
-/*  
-function send_xmlhttp_req(url_,op, payload){
-	xhr = new XMLHttpRequest();
-	url = URL_PREFIX + BASE_URI + url_;
-	
-	xhr.open(op, url, true);
-	xhr.withCredentials =  true;
-	xhr.setRequestHeader("Content-Type", "application/json");
-	xhr.setRequestHeader('Authorization',"Basic " + btoa('tiv_user' + ":" + 'calvin'));
-	xhr.send(payload);
 
-	alert('request sent : '+url);
-	
-	xhr.onreadystatechange = function () {
-		if (xhr.readyState == XHR_DONE ){
-			if(xhr.status == HTTP_OK ){
-
-				
-					
-			}
-			else if(xhr.status == HTTP_INSUFF_PRIV) {
-				console.log(xhr.responseText);
-				console.log('sending a request to reload login page');
-				//send_xmlhttp_req('/login',newIP,newMask,'GET',payload);
-				return;
-			}
-		}
-		else{
-			console.log('readyState :',xhr.readyState);
-
-		}
-
-    }//end of function
-}
-
-function update(){
-	var newIP =  document.getElementById("nIP").value;//TBD : Need to take from form
-	var newMask =  document.getElementById("nMask").value;
-	
-	var payload = JSON.stringify({"IPADDR":newIP, "PREFIX":newMask});
-	var url = BRIDGE_CONFIG_URI;
-
-
-	// ****** send request ****************
-	var values = new Array(2);
-	values = send_xmlhttp_req(url,newIP,newMask,"POST", payload);
-
-};*/
-
-/*function upload(input){
-		alert("anand");
-        var UPLOAD_URI_ANANDR = "/rest/v1/managers/actions/importConfig";
-		var xhr = new XMLHttpRequest();
-        xhr.setRequestHeader('Authorization',"Basic " + btoa('tiv_user' + ":" + 'calvin'));
-		xhr.upload.onprogress = function(e) {
-			console.log(e.loaded, e.total)
-		}
-		xhr.upload.onload = function(e) {
-			console.log('file upload')
-		}
-		xhr.open("POST", UPLOAD_URI_ANANDR, true);
-		xhr.send(new FormData(input.parentElement));
-	}*/
-
-    
-   /* function upload_image() {
-                console.log('btn clicked');
-                    var file = document.getElementById('upload').files;
-                    console.log('upload method clicked');
-                    var xhr = new XMLHttpRequest();
-                     // not necessary if you create scopes like this
-                    xhr.onreadystatechange = function(e) {
-                        if ( 4 == this.readyState ) {
-                            console.log(['xhr upload complete', e]);
-                        }
-                        else{
-                            console.log('error occured');
-                        }
-                    };
-                    
-                    var url='/rest/v1/managers/actions/importConfig';
-                    xhr.open('post', url, true);
-                    xhr.withCredentials = true;
-                    
-                    //var token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZGQ2OWI3NDIzZTA4ZDIxMGM0YzVlYjgiLCJpYXQiOjE1NzQzNTkxMDgsImV4cCI6MTU3NDM2MjcwOH0.DURuneq-V-kIS_Bo9Eb_Ob7kDlHEUtYzNVphFtaf6FE";
-                    xhr.setRequestHeader('Authorization',"Basic " + btoa('tiv_user' + ":" + 'calvin'));
-                    var formData = new FormData();
-                    formData.append("file", file);
-                    xhr.send(formData);    
-
-                } */
 
 
                 function upload_image_form() {
