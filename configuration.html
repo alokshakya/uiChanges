@@ -88,13 +88,13 @@
                                    <div class="col-md-6 p-0 mtb-20">
                                     <div class="commonform" id="internalPorts">
 
-                                       <div class="form-group col-xs-12 col-md-12">
+                                       <!-- <div class="form-group col-xs-12 col-md-12">
                                             <label class="control-label col-xs-12 col-sm-4 col-md-5"><b>Port</b></label>
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
                                                 <strong>Bridge</strong>
                                             </div>
-                                        </div>
-                                        <div class="form-group col-xs-12 col-md-12" style="margin-bottom:5px;">
+                                        </div> -->
+                                        <!-- <div class="form-group col-xs-12 col-md-12" style="margin-bottom:5px;">
                                             <label class="control-label col-xs-12 col-sm-4 col-md-5" id="en1s0">EN1S0</label>
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
                                                 <select class="form-control display-inline" style="width:35%;float: left;margin-right: 10px;">
@@ -156,14 +156,14 @@
                                                    <option>No</option>
                                                 </select>
                                             </div>
-                                        </div>
+                                        </div> -->
 
-                                        <div class="form-group col-xs-12 col-md-12">
+                                        <!-- <div class="form-group col-xs-12 col-md-12">
                                             <label class="control-label col-xs-12 col-sm-4 col-md-5">&nbsp;</label>
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
  												<button type="button" class="btn btn-primary" onclick="update()">Update</button>
                                             </div>
-                                        </div>
+                                        </div> -->
 
 
 									
@@ -207,9 +207,9 @@
 
                                             <div class="col-sm-7">
 
-                                                <input type="radio" name="PaymentMethod" value="" id="" style="margin: 4px 9px 0px;">Static
+                                                <input type="radio" name="PaymentMethod" value="static" onchange="enableDisable(value)" id="" style="margin: 4px 9px 0px;">Static
 
-                                                <input type="radio" name="PaymentMethod" value="" id="" style="margin: 4px 9px 0px;">DHCP
+                                                <input type="radio" name="PaymentMethod" value="dhcp" onchange="enableDisable(value)" id="" style="margin: 4px 9px 0px;">DHCP
 
                                             </div>
 
@@ -221,7 +221,7 @@
 
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
 
-                                                <input class="form-control" size="30" type="text">
+                                                <input class="form-control" size="30" type="text" id="newIp">
 
                                             </div>
 
@@ -576,7 +576,7 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
 
 
             function getLanbypass(){
-
+                internalPortsRender();
                
                 xhr = new XMLHttpRequest();
                 url = "/rest/v1/network/config/lanbypass";
@@ -701,7 +701,133 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
                     document.getElementById('messageLBP').innerHTML = '<p style="color:red">Network Error!!</p>';
                     };
 
-            }
+            };
+
+            function internalPortsRender(){
+                var internalPortsDoc = document.getElementById('internalPorts');
+                var ht =``;
+                ht +=`<div class="form-group col-xs-12 col-md-12">
+                            <label class="control-label col-xs-12 col-sm-4 col-md-5"><b>Port</b></label>
+                            <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
+                                <strong>Bridge</strong>
+                            </div>
+                        </div>`;
+                var resObj={
+                                "enp1s0": {
+                                    "ipaddress": "192.168.1.2", 
+                                    "prefix": "24", 
+                                    "status": "UP", 
+                                    "type": "Ethernet"
+                                }, 
+                                "enp2s0": {
+                                    "ipaddress": "192.168.1.3", 
+                                    "prefix": "24", 
+                                    "status": "DOWN", 
+                                    "type": "Ethernet"
+                                }
+                            };
+                for(let key in resObj ){
+                    console.log('key : '+key);
+                    ht +=`
+                    <div class="form-group col-xs-12 col-md-12" style="margin-bottom:5px;">
+                        <label class="control-label col-xs-12 col-sm-4 col-md-5" id='${key}'>${key}</label>
+                        <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
+                            <select class="form-control display-inline" style="width:35%;float: left;margin-right: 10px;">
+                                <option>Yes</option>
+                                <option>No</option>
+                            </select>
+                        </div>
+                    </div>
+                    `;   
+                }
+
+                ht +=`
+                <div class="form-group col-xs-12 col-md-12">
+                    <label class="control-label col-xs-12 col-sm-4 col-md-5">&nbsp;</label>
+                    <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
+                        <button type="button" class="btn btn-primary" onclick="update()">Update</button>
+                    </div>
+                </div>
+                `;
+
+             internalPortsDoc.innerHTML = ht;
+
+             //calling api for response
+             let xhr = new XMLHttpRequest();
+             let url = '';
+             xhr.onload = function(){
+                console.log('xhr.status : '+xhr.status);
+                ht=``;
+                ht +=`<div class="form-group col-xs-12 col-md-12">
+                            <label class="control-label col-xs-12 col-sm-4 col-md-5"><b>Port</b></label>
+                            <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
+                                <strong>Bridge</strong>
+                            </div>
+                        </div>`;
+                if(xhr.status == 200 || xhr.status == 201){
+                    console.log(xhr.response);
+                    resObj = xhr.response;
+                    for(let key in resObj ){
+                    console.log('key : '+key);
+                    ht +=`
+                    <div class="form-group col-xs-12 col-md-12" style="margin-bottom:5px;">
+                        <label class="control-label col-xs-12 col-sm-4 col-md-5" id='${key}'>${key}</label>
+                        <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
+                            <select class="form-control display-inline" style="width:35%;float: left;margin-right: 10px;">
+                                <option>Yes</option>
+                                <option>No</option>
+                            </select>
+                        </div>
+                    </div>
+                    `;
+                    ht +=`
+                <div class="form-group col-xs-12 col-md-12">
+                    <label class="control-label col-xs-12 col-sm-4 col-md-5">&nbsp;</label>
+                    <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
+                        <button type="button" class="btn btn-primary" onclick="update()">Update</button>
+                    </div>
+                </div>
+                `;
+                }
+                }
+                else{
+                    console.log(xhr.response);
+                    ht +=`
+                <div class="form-group col-xs-12 col-md-12">
+                    <label class="control-label col-xs-12 col-sm-4 col-md-5">&nbsp;</label>
+                    <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
+                        <button type="button" class="btn btn-primary" onclick="update()">Update</button>
+                    </div>
+                </div>
+                `;
+                    
+                }
+
+             };
+             xhr.onerror = function(){
+                console.log('error occured while fetching ports');
+             };
+
+             //open request
+             xhr.open('GET',url,true);
+             xhr.withCredentials = true;
+             xhr.send();
+
+
+            };
+
+            function enableDisable(value){
+                console.log('enableDisable fun triggered ');
+                console.log('value '+value);
+                var dd = document.getElementById('newIp');
+                if(value=='dhcp'){
+                    dd.setAttribute('disabled','disabled');
+                }
+                else{
+                    dd.removeAttribute('disabled');
+                }
+            };
+
 
 </script>
 
