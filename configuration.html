@@ -766,7 +766,7 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
                         </div>`;
                 if(xhr.status == 200 || xhr.status == 201){
                     console.log(xhr.response);
-                    resObj = xhr.response;
+                    resObj = JSON.parse(xhr.response);
                     for(let key in resObj ){
                     console.log('key : '+key);
                     ht +=`
