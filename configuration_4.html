@@ -194,9 +194,9 @@
 										 <div class="form-group col-xs-12 col-md-12" style="margin-bottom:5px;">
                                             <label class="control-label col-xs-12 col-sm-4 col-md-5">Interface List</label>
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
-                                                <select class="form-control display-inline" style="width:35%;float: left;margin-right: 10px;">
-                                                    <option>E1</option>
-                                                   <option>E2</option>
+                                                <select id="interfaceSelect" onchange="interfaceChanged()" class="form-control display-inline" style="width:35%;float: left;margin-right: 10px;">
+                                                    <!-- <option>E1</option>
+                                                   <option>E2</option> -->
                                                 </select>
                                             </div>
                                         </div>                                      
@@ -207,9 +207,11 @@
 
                                             <div class="col-sm-7">
 
-                                                <input type="radio" name="PaymentMethod" value="static" onchange="enableDisable(value)" id="" style="margin: 4px 9px 0px;">Static
+                                                <input type="radio" name="interfaceRadio" id="interfaceRadioStatic" value="static" onchange="enableDisable(value)" style="margin: 4px 9px 0px;">Static
 
-                                                <input type="radio" name="PaymentMethod" value="dhcp" onchange="enableDisable(value)" id="" style="margin: 4px 9px 0px;">DHCP
+                                                <input type="radio" name="interfaceRadio" id="interfaceRadioDhcp" value="dhcp" onchange="enableDisable(value)" style="margin: 4px 9px 0px;">DHCP
+
+                                                <input type="radio" name="interfaceRadio" id="interfaceRadioNoip" value="NoIP" onchange="enableDisable(value)" style="margin: 4px 9px 0px;">NoIP
 
                                             </div>
 
@@ -221,7 +223,7 @@
 
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
 
-                                                <input class="form-control" size="30" type="text">
+                                                <input name="textInput" class="form-control" size="30" type="text">
 
                                             </div>
 
@@ -229,7 +231,7 @@
 
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
 
-                                                <input class="form-control" size="30" type="text">
+                                                <input name="textInput" class="form-control" size="30" type="text">
 
                                             </div>
 
@@ -237,7 +239,7 @@
 
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
 
-                                                    <input class="form-control" size="30" type="text">
+                                                    <input name="textInput" class="form-control" size="30" type="text">
 
                                             </div>
 
@@ -577,6 +579,7 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
                 document.getElementById("logged-in-user").innerHTML = localStorage.getItem('user');
                 internalPortsRender();
                 renderTable();
+                interfaceList();
 
                 xhr = new XMLHttpRequest();
                 url = "/rest/v1/network/config/lanbypass";
@@ -636,7 +639,7 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
                     };
                     xhr.send();
                 
-            }
+            };
 
 
             function updateLanbypass() {
@@ -850,14 +853,7 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
 
             };
 
-            function enableDisable(value){
-                console.log('enableDisable fun triggered ');
-                console.log('value '+value);
-                
-                if(value =='static'){
-                    addRow({});
-                }
-            };
+            
 
             function renderTable(){
                 var resObj = 
@@ -930,7 +926,7 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
                         <tr class="rowpointer">
                             <td class="nowrap">${key}</td>
                             <td class="noaction">${resObj[`${key}`].ipaddress}</td>
-                            <td>${resObj[`${key}`].netmask}</td>
+                            <td>${resObj[`${key}`].prefix}</td>
                             <td class="nowrap">${resObj[`${key}`].status}</td>
                             <td>${resObj[`${key}`].type}</td>            
                         </tr>
@@ -971,7 +967,7 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
                     `
                     <td class="nowrap">${obj.name}</td>
                     <td class="noaction">${obj.ipaddress}</td>
-                    <td>${obj.netmask}</td>
+                    <td>${obj.prefix}</td>
                     <td class="nowrap">${obj.status}</td>
                     <td>${obj.type}</td>
                     `;
@@ -1026,6 +1022,93 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
                 xhr.withCredentials = true;
                 xhr.send(JSON.stringify(dat));
                 
+            };
+            var globalInterfaceVar;
+            
+            function interfaceList(){
+                var resObj=
+                `{
+                    "members":{
+                        "esp1":"true",
+                        "esp2":"false",
+                        "esp3":"false",
+                        "esp4":"true"
+                    }
+                }`;
+                resObj = JSON.parse(resObj);
+                globalInterfaceVar = resObj;
+                var eee = document.getElementById('interfaceSelect');
+                ht=`<option value='br0' selected>br0</option>`;
+                for(let key in resObj['members']){
+                    ht +=`<option value='${key}'>${key}</option>`;
+                }
+                eee.innerHTML = ht;
+                trueCondition();
+
+            };
+
+            function interfaceChanged(){
+                var val = document.getElementById('interfaceSelect').value;
+                console.log('value selected '+val);
+
+                console.log('global interface var ');
+                console.log(globalInterfaceVar);
+
+                if(val == "br0"){
+                    trueCondition();
+                }
+                else{
+                    console.log('selected field val '+globalInterfaceVar['members'][`${val}`]);
+                    if(globalInterfaceVar['members'][`${val}`] == "true"){
+                        trueCondition();
+                    }
+                    else{
+                        falseCondition();
+                    }
+                }
+            };
+            function trueCondition(){
+                // select radio button NoIP automatically and disable other fields
+                document.getElementById('interfaceRadioNoip').removeAttribute('disabled');
+                document.getElementById('interfaceRadioNoip').checked = true;
+                document.getElementById('interfaceRadioStatic').setAttribute('disabled','disabled');
+                document.getElementById('interfaceRadioDhcp').setAttribute('disabled','disabled');
+                disableText();
+
+            };
+            function falseCondition(){
+                //disable NoIP radio button
+                document.getElementById('interfaceRadioNoip').checked = false;
+                document.getElementById('interfaceRadioNoip').setAttribute('disabled','disabled');
+                document.getElementById('interfaceRadioStatic').removeAttribute('disabled');
+                document.getElementById('interfaceRadioDhcp').removeAttribute('disabled');
+                enableText();
+            };
+
+            function disableText(){
+                //disable text input
+                var dd = document.getElementsByName('textInput');
+                for(let i=0; i< dd.length; i++){
+                    dd[i].setAttribute('disabled','disabled');
+                }
+            };
+            function enableText(){
+                //enable text input
+                var dd = document.getElementsByName('textInput');
+                for(let i=0; i< dd.length; i++){
+                    dd[i].removeAttribute('disabled');
+                }
+            };
+            function enableDisable(value){
+                console.log('enableDisable fun triggered ');
+                console.log('value '+value);
+                
+                if(value =='static'){
+                    enableText();
+                }
+                else{
+                    disableText();
+                }
             };
 </script>
 
