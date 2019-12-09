@@ -223,7 +223,7 @@
 
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
 
-                                                <input name="textInput" class="form-control" size="30" type="text">
+                                                <input name="textInput" id="newip" class="form-control" size="30" type="text">
 
                                             </div>
 
@@ -231,7 +231,7 @@
 
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
 
-                                                <input name="textInput" class="form-control" size="30" type="text">
+                                                <input name="textInput" id="netmask" class="form-control" size="30" type="text">
 
                                             </div>
 
@@ -239,7 +239,7 @@
 
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
 
-                                                    <input name="textInput" class="form-control" size="30" type="text">
+                                                    <input name="textInput" id="gateway" class="form-control" size="30" type="text">
 
                                             </div>
 
@@ -251,7 +251,7 @@
                                             <label class="control-label col-xs-12 col-sm-4 col-md-5">&nbsp;</label>
 
                                             <div class="col-xs-12 col-sm-8 col-md-7 pb-5">
- 												<button type="button" class="btn btn-primary">Update</button>
+ 												<button type="button" class="btn btn-primary" onclick="updateInterface()">Update</button>
                                             </div>
 
                                         </div>
@@ -1029,10 +1029,9 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
                 var resObj=
                 `{
                     "members":{
-                        "esp1":"true",
-                        "esp2":"false",
-                        "esp3":"false",
-                        "esp4":"true"
+                        "enp0s3":"true",
+                        "esp0s8":"false",
+                        "esp0s9":"false"
                     }
                 }`;
                 resObj = JSON.parse(resObj);
@@ -1044,6 +1043,43 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
                 }
                 eee.innerHTML = ht;
                 trueCondition();
+
+                //get value from api and update dom according to that also don't forget to modify
+                // globalInterfaceVar to latest resObj obtained from server
+
+                let xhr = new XMLHttpRequest();
+                let url = 'rest/v1/network/config/bridge';
+                xhr.onload = function(){
+                console.log('xhr.status in interface configuration get request : '+xhr.status);
+                if(xhr.status == 200 || xhr.status == 201){
+                    console.log(xhr.response);
+		            console.log('response in interface get');
+                    resObj = JSON.parse(xhr.response);
+                    globalInterfaceVar = resObj;
+                    var eee = document.getElementById('interfaceSelect');
+                    ht=`<option value='br0' selected>br0</option>`;
+                    for(let key in resObj['members']){
+                        ht +=`<option value='${key}'>${key}</option>`;
+                    }
+                    eee.innerHTML = ht;
+                    trueCondition();
+                }
+                else{
+                    console.log(xhr.response);
+                    console.log('interface configuration get not success ');
+                    
+                }
+                
+
+             };
+             xhr.onerror = function(){
+                console.log('network failure during get of interface configuration');
+             };
+
+             //open request
+             xhr.open('GET',url,true);
+             xhr.withCredentials = true;
+             xhr.send();
 
             };
 
@@ -1079,6 +1115,8 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
             function falseCondition(){
                 //disable NoIP radio button
                 document.getElementById('interfaceRadioNoip').checked = false;
+                document.getElementById('interfaceRadioDhcp').checked = false;
+                document.getElementById('interfaceRadioStatic').checked = true;
                 document.getElementById('interfaceRadioNoip').setAttribute('disabled','disabled');
                 document.getElementById('interfaceRadioStatic').removeAttribute('disabled');
                 document.getElementById('interfaceRadioDhcp').removeAttribute('disabled');
@@ -1089,6 +1127,7 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
                 //disable text input
                 var dd = document.getElementsByName('textInput');
                 for(let i=0; i< dd.length; i++){
+                    dd[i].value ='';
                     dd[i].setAttribute('disabled','disabled');
                 }
             };
@@ -1109,6 +1148,66 @@ document.getElementById("importConfigUpload").href=URL_PREFIX_FEATURE+'/rest/v1/
                 else{
                     disableText();
                 }
+            };
+
+            function updateInterface(){
+                console.log('updateInterface function triggered');
+
+                let ip = document.getElementById('newip').value;
+                let netmask = document.getElementById('netmask').value;
+                let gateway = document.getElementById('gateway').value;
+                let rad = document.getElementsByName('interfaceRadio');
+
+                var rd;
+                for(let i=0; i < rad.length; i++){
+                    if(rad[i].checked){
+                        rd = rad[i].value;
+                    }
+                }
+                var interfaceName = document.getElementById('interfaceSelect').value;
+
+                var dat ={};
+                dat[`${interfaceName}`]={};
+                dat[`${interfaceName}`].GATEWAY = gateway;
+                dat[`${interfaceName}`].IPADDR = ip;
+                dat[`${interfaceName}`].IPCONFIGMODE = rd.toUpperCase();
+                dat[`${interfaceName}`].PREFIX = netmask;
+
+                console.log('dat object');
+                console.log(dat);
+                dat = JSON.stringify(dat);
+                console.log('stringify data'+dat);
+
+                //post data to server
+                let xhr = new XMLHttpRequest();
+                let url = `rest/v1/network/config/bridge/${interfaceName}`;
+                console.log('url called :'+url);
+                xhr.onload = function(){
+                    console.log('xhr.status in interface configuration update: '+xhr.status);
+                    
+                    if(xhr.status == 200 || xhr.status == 201){
+                        console.log(xhr.response);
+                        console.log('response in interface configuration update success');
+                        resObj = JSON.parse(xhr.response);
+                        console.log(resObj);
+                    }
+                    else{
+                        console.log(xhr.response);
+                        console.log('response in interface configuration update failure');
+                    }
+                    
+
+                };
+                xhr.onerror = function(){
+                    console.log('error occured while updating interface configuration');
+                };
+
+                //open request
+                xhr.open('POST',url,true);
+                xhr.setRequestHeader('Content-Type','application/json');
+                xhr.withCredentials = true;
+                xhr.send(dat);
+
             };
 </script>
 
