@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tripwire Industrial Appliance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="author" content="Vincent Garreau" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	  <link rel="stylesheet" media="screen" href="{{url_for('static', filename='Application/css/style.css') }}">
+
+	<link href="{{url_for('static', filename='Application/css/login.css') }}" rel="stylesheet" />
+	<link href="{{url_for('static', filename='Application/css/font-awesome.css') }}" rel="stylesheet">
+	<style>
+		html, body{padding:0px; margin:0px; font-family:Nunito Sans;}
+		.fl{float:left;}
+	</style>
+
+</head>
+<body>
+<button onclick="jsonR()">JSON dis</button>
+<div class="main-outer">
+	<div class="content-outer">
+		<div class="about-middle">
+			<div class="main-inner">
+				<div class="bottom-inner">
+					<div class="about-midd-main">
+						<div class="logoWrap">
+							<img src="{{url_for('static', filename='Application/imgs/tripwire-logo.png') }}">
+							<h4>Tripwire Industrial Appliance</h4>
+						</div>
+					</div>
+					<div class="new-account-form">
+						<div style="text-align:center;"><h2>Login</h2></div>
+							<div class="inputs-w3ls">                                    
+								<i class="fa fa-user"></i><input type="text" placeholder="Login ID" name="username" id="loginID">
+                            </div>
+                            <div id="show_error" class="fl"></div>
+							<div class="inputs-w3ls">
+								<i class="fa fa-unlock-alt"></i><input type="password" placeholder="Password" name="password" id="loginPWD">
+							</div>
+                             <div id="show_errorPwd" class="fl"></div>
+
+
+							<div class="button-field">
+							<input id="saveForm" name="saveForm" type="submit" value="Sign In" onclick="login()">
+							</div>
+
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- scripts -->
+
+<script src="{{url_for('static', filename='Application/js/jquery-2.1.1.min.js') }}"></script>
+
+<script type="text/javascript" src="{{url_for('static', filename='Application/js/common.js') }}"></script>
+
+<script>
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+     var c = ca[i];
+     while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+     }
+     if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+     }
+  }  
+  return "";
+};
+
+function send_xmlhttp_req(url_, uname,pwd,op, payload){
+	xhr = new XMLHttpRequest();
+	url = URL_PREFIX + url_;
+	
+	
+	//alert('request sent : '+url);
+
+	xhr.onload = function() {
+                //executed when request sending done and response received
+               	var loginBtn = document.getElementById("saveForm");
+				loginBtn.removeAttribute('disabled');
+               // console.log(responseObj); 
+
+                    if(xhr.status == 200 || xhr.status == 201){                           
+                         console.log('Requesting for FPC screen');
+                         var user = getCookie("userid");
+                         var request = getCookie("request");
+                        
+                         if (request == 'fpc'){
+                             //alert('going for fpc');
+                             window.location.href = FPC_URI;
+                             return;
+                         }
+
+                        console.log('success');
+                        // Logic
+							if (url_ == LOGIN_URI){
+							var html = xhr.responseText;
+							//localStorage.setItem('user',uname);
+							//localStorage.setItem('password',pwd);
+							//[xhr.responseText, xhr.status];
+							//document.write(html);
+							window.location.href = DASHBOARD_URI;
+							//send_xmlhttp_req(DASHBOARD_URI,uname,pwd,'GET',payload);
+							//return;
+							}
+							else if (url_ == DASHBOARD_URI)
+							{
+							console.log('loading dashboard page');
+							document.write(xhr.responseText);
+							//return;					
+							}
+							else{
+								alert('in else');
+							}
+                        // Logic end
+                    }
+                else if(xhr.status == HTTP_INSUFF_PRIV) {
+				console.log(xhr.responseText);
+				var res = JSON.parse(xhr.response);
+				alert(res.message);
+
+				emptyInputFields();
+				console.log('sending a request to reload login page');
+				//send_xmlhttp_req('/login',uname,pwd,'GET',payload);
+				return;
+				
+			}
+        };
+	
+	xhr.onreadystatechange = function () {
+		if (xhr.readyState == XHR_DONE ){
+			if(xhr.status == HTTP_OK ){
+				console.log('url '+url_ +'LOGIN_URI '+LOGIN_URI + ' DASHBOARD_URI '+DASHBOARD_URI);
+				//alert('status is ok and load is '+url_);
+				
+				//console.log('sending a request to load dashboard page');
+				//send_xmlhttp_req('/dashboard',uname,pwd,'GET',payload);
+			}
+			
+		}
+		else{
+			console.log('readyState :',xhr.readyState);
+
+		}
+
+    }//end of function
+    xhr.open(op, url, true);
+	xhr.withCredentials =  true;
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.setRequestHeader('Authorization',"Basic " + btoa(uname + ":" + pwd));
+	xhr.send(payload);
+}
+
+function login(){
+	var loginBtn = document.getElementById("saveForm");
+	loginBtn.setAttribute('disabled','disabled');
+
+	var uname =  document.getElementById("loginID").value;//TBD : Need to take from form
+	var pwd =  document.getElementById("loginPWD").value;
+	
+	var payload = JSON.stringify({});
+	var url = LOGIN_URI;
+
+	//*************** validation ***********************
+	if(uname == ""){
+	    document.getElementById("show_error").innerHTML = "**Login id must be filled";
+	    document.getElementById("show_error").style.color = "red";
+	    document.getElementById("show_error").style.paddingLeft = "44px";
+	    document.getElementById("show_error").style.paddingBottom = "15px";
+		loginBtn.removeAttribute('disabled');
+	
+	    return false;
+    }
+    if( uname != "admin"){
+	    alert("Please login as admin");
+	    loginBtn.removeAttribute('disabled');
+	    document.getElementById("loginID").value = '';
+	    document.getElementById("loginPWD").value = '';
+	    return false;
+    }
+    if((uname.length <= 2) || (uname.length >= 26)){
+	    document.getElementById("show_error").innerHTML = "**Login id must be between 3 and 25 letters";
+	    loginBtn.removeAttribute('disabled');
+	    return false;
+    }
+    if(pwd == ""){
+	    document.getElementById("show_errorPwd").innerHTML = "**Password must be filled";
+	    document.getElementById("show_errorPwd").style.color = "red";
+	    document.getElementById("show_errorPwd").style.paddingLeft = "44px";
+	    document.getElementById("show_errorPwd").style.paddingBottom = "15px";
+	    loginBtn.removeAttribute('disabled');
+	    return false;
+    }
+    /*if((pwd.length <= 5) || (pwd.length >= 26)){
+	    document.getElementById("show_error").innerHTML = "**Password must be between 5 and 25 letters";
+	    loginBtn.removeAttribute('disabled');
+	    return false;
+    }*/
+
+	// ****** send request ****************
+	var values = new Array(2);
+	values = send_xmlhttp_req(url,uname,pwd,"POST", payload);
+		
+};
+
+function emptyInputFields(){
+	
+	document.getElementById("loginID").value ='';
+	document.getElementById("loginPWD").value ='';
+};
+
+function jsonR(){
+ var a = {
+	 name:'ak',
+	 age:12
+ };
+ a = JSON.stringify(a);
+ console.log(a);
+};
+
+( function() {
+  var ip= document.getElementById('loginPWD');
+  ip = addEventListener("keyup", function(e) {
+  	if(e.keyCode === 13){
+  		e.preventDefault();
+  		login();
+  	}
+  });
+})();
+
+</script>
+
+
+</body>
+</html>

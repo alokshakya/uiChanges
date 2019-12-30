@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Testing</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <style>
+            #overlay {
+              position: fixed;
+              display: none;
+              width: 100%;
+              height: 100%;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background-color: rgba(0,0,0,0.6);
+              z-index: 50;
+              cursor: pointer;
+            }
+            
+            #text{
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              font-size: 20px;
+              color: white;
+              transform: translate(-50%,-50%);
+              -ms-transform: translate(-50%,-50%);
+            }
+            .loaderOverlay {
+            position: absolute;
+            top: 80%;
+            left: 35%;
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid blue;
+            border-bottom: 16px solid blue;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+            }
+
+            @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+            }
+
+            @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+            }
+            /* for screen less than or eqaul to 600px below css*/
+            @media screen and (max-width: 600px) { 
+                #text{
+                    font-size:11px;
+                }
+                .loaderOverlay{
+                    top: 100%;
+                    left: 25%;
+                    border: 8px solid #f3f3f3;
+                    border-radius: 50%;
+                    border-top: 8px solid blue;
+                    border-bottom: 8px solid blue;
+                    width: 60px;
+                    height: 60px;
+                }
+            }
+
+            </style>
+    </head>
+    <body onload="loadData()">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+
+                </div>
+                <div class="col-md-4">
+                    <p>Text in screen</p>
+                    <button class="btn btn-success" onclick="off()">Disable </button>
+                    <button class="btn btn-primary" onclick="on()">Enable </button>
+                </div>
+            </div>
+        </div>
+        <div id="overlay" onclick="off()">
+            <div id="text">
+            <p>Reboot in progress.. Please wait..</p><br>
+            <div class="loaderOverlay"></div>
+            </div>
+        </div>
+
+        <div >IP : <span id='mIP'></span>
+
+        </div>
+
+        <hr>
+        <div id="deletemodel" class="modal fade">
+            <div class="modal-dialog modal-confirm">
+                <div class="modal-content">
+                    <div class="modal-header">  </div>
+                    <div class="modal-body">
+                        <p id="dialogMessage">Do you really want to delete these record? This process cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-info" id="cancelButton">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="confirmButton">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-danger" onclick="del()">Modal Demo </button>
+    </body>
+    <script>
+        function on() {
+          document.getElementById("overlay").style.display = "block";
+        }
+        
+        function off() {
+          document.getElementById("overlay").style.display = "none";
+        }
+        function loadData(){
+            console.log('on load function load data called');
+
+            let membersData = 
+                `
+                {
+                    "members":{
+                        "br0":false,
+                        "enp0s3":false,
+                        "enp0s9":false
+                    }
+                }
+                `;
+                let interfaceData = 
+                `
+                {
+                    "br0":{
+                        "IPCONFIGMODE":"STATIC",
+                        "PREFIX":"24",
+                        "IPADDR":"192.168.1.2",
+                        "GATEWAY":""
+                    },
+                    "enp0s3":{
+                        "IPCONFIGMODE":"DHCP",
+                        "PREFIX":"",
+                        "IPADDR":"",
+                        "GATEWAY":""
+                    },
+                    "enp0s9":{
+                        "IPCONFIGMODE":"STATIC",
+                        "PREFIX":"24",
+                        "IPADDR":"192.168.1.5",
+                        "GATEWAY":""
+                    }
+                }
+                `;
+                // logic to display ip according to members value
+                let flag=false;
+                membersData = JSON.parse(membersData);
+                interfaceData = JSON.parse(interfaceData);
+                for(let key in membersData['members']){
+                    if(membersData['members'][`${key}`]){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(flag){
+                    //show br0 IP address
+                    document.getElementById('mIP').innerHTML = interfaceData['br0']['IPADDR'];
+                }
+                else{
+                    //show IP of first key in interface
+                    let keyArray = Object.keys(interfaceData);
+                    document.getElementById('mIP').innerHTML = interfaceData[`${keyArray[0]}`]['IPADDR'];
+                }
+        };
+        function del(){
+            let customMessage = 'You can pass any message here to be displayed on screen.';
+            confirmBox(customMessage, (val) => {
+                console.log('value returned by cb '+val);
+                if(!val){
+                    return;
+                }
+                //define code which is to be executed on confirmation
+            });    
+        };
+
+        function confirmBox(message, cb){
+            $("#deletemodel").modal('show');
+            document.getElementById('dialogMessage').innerHTML = message;
+            $("#confirmButton").on("click", function(){
+                $("#deletemodel").modal('hide');
+                cb(true);
+            });
+            $("#cancelButton").on("click", function(){
+                $("#deletemodel").modal('hide');
+                cb(false);
+            });
+        };
+        </script>
+</html>

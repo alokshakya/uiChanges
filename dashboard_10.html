@@ -1,0 +1,697 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Tripwire Industrial Appliance</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link type="text/css" href="{{url_for('static', filename='Application/css/bootstrap.css') }}" rel="stylesheet" />
+<link type="text/css" href="{{url_for('static', filename='Application/css/font-awesome.css') }}" rel="stylesheet">
+<link type="text/css" href="{{url_for('static', filename='Application/css/global-style.css') }}" rel="stylesheet">
+
+<script type="text/javascript" src="{{url_for('static', filename='Application/js/common.js') }}"></script>
+
+<style>
+    #overlay {
+        position: fixed;
+        display: none;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,0.6);
+        z-index: 50;
+        cursor: pointer;
+    }
+
+    #text{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        font-size: 20px;
+        color: white;
+        transform: translate(-50%,-50%);
+        -ms-transform: translate(-50%,-50%);
+    }
+
+    .loaderOverlay {
+        position: absolute;
+        top: 80%;
+        left: 35%;
+        border: 16px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 16px solid blue;
+        border-bottom: 16px solid blue;
+        width: 120px;
+        height: 120px;
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+}
+
+    @-webkit-keyframes spin {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* for screen less than or eqaul to 600px below css*/
+    @media screen and (max-width: 600px) {
+        #text{
+            font-size:11px;
+        }
+        .loaderOverlay{
+            top: 100%;
+            left: 25%;
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid blue;
+            border-bottom: 8px solid blue;
+            width: 60px;
+            height: 60px;
+        }
+    }
+    .minHeightWrap{min-height: 570px;}
+</style>
+
+</head>
+
+<body onload="userName()">
+    <div id="overlay">
+        <div id="text">
+        <p>Reboot in progress.. Please wait..</p><br>
+        <div class="loaderOverlay"></div>
+        </div>
+    </div>
+    <!--html to show confirm box starts -->
+    <div id="deletemodel" class="modal fade">
+        <div class="modal-dialog modal-confirm">
+            <div class="modal-content">
+                <div class="modal-header">  </div>
+                <div class="modal-body">
+                    <p id="dialogMessage">Do you really want to delete these record? This process cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-info" id="cancelButton">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmButton">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--html to show confirm box ends -->
+
+    <div class="wrapper">
+
+        <!----Header---->
+
+ <header class="navbar navbar-default top-navbar" role="navigation">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#"><img src="{{url_for('static', filename='Application/imgs/tripwire-logo.png')}}" alt="Tripwire"></a>
+            </div>
+            <div class="tiaWrap" style="float: left;background: transparent;color: white;padding-top: 15px;">
+                  Tripwire Industrial Appliance <br/><span class="tia700">TIA-700V</span>
+            </div>
+            <ul class="nav navbar-top-links pull-right">
+
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                        <i class="fa fa-user-circle"></i> <span id="logged-in-user"></span>  <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <li><a onclick="factory_reset()"><i class="fa fa-user fa-fw"></i> Factory Reset</a></li>
+                        <li><a onclick="reboot()"><i class="fa fa-gear fa-fw"></i> Reboot</a></li>
+                        <li class="divider"></li>
+                        <li><a onclick="logout()"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </header>
+
+        <!----Left Navigation Sidebar---->
+        <aside class="sidebar sidebar-collapse">
+        <div class="navbar-default navbar-side">
+            <ul class="nav" id="main-menu">
+                    <li><a href="#" class="active-menu"><i class="fa fa-tachometer"></i></a></li>                  
+                    <li><a href="#" id="config"><i class="fa fa-microchip"></i></a></li>
+                    <li><a href="#" id="sSettings"><i class="fa fa-cog"></i></a></li>
+                </ul>                
+        </div>
+        </aside>
+
+
+        <!----Right Main Content---->
+		<section class="page-wrapper">
+            <div class="header">
+                <h5 class="page-header">Dashboard</h5>
+            </div>
+
+            <div class="page-inner">
+
+				<div class="row">
+                    <div class="col-md-2">
+                        <div class="panel panel-default alignCenter minHeightWrap">
+                            <div class="panel-heading">Virtual Front Panel <a href="#"></a></div>
+                            <img src="{{url_for('static', filename='Application/imgs/cpu-port.jpg')}}" alt="Tripwire" class="mtb-30">
+                        </div>
+                    </div>                    
+					<div class="col-md-10">
+						<div class="row">
+							<div class="col-md-6">
+								<div class="panel panel-default fl minHeightWrap">
+									<div class="panel-heading">System Information <a href="#"></a></div>
+										<div class="commonform">
+                                            <div class="form-group col-xs-12 col-md-12">
+                                                <label class="control-label col-xs-12 col-sm-4 col-md-3">Name</label>
+                                                <div class="col-sm-4">
+                                                    : <span id="siName"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-xs-12 col-md-12">
+                                                <label class="control-label col-xs-12 col-sm-4 col-md-3">Description</label>
+                                                <div class="col-md-9">
+                                                    <span class="fl">:</span> <span id="siDes" style="padding-left: 4px;float: left;width: 99%"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-xs-12 col-md-12">
+                                                <label class="control-label col-xs-12 col-sm-4 col-md-3">Location</label>
+                                                <div class="col-md-9">
+                                                    : <span id="siLocation"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-xs-12 col-md-12">
+                                                <label class="control-label col-xs-12 col-sm-4 col-md-3">Firmware Version </label>
+                                                <div class="col-md-9">
+                                                    : <span id="siFirmVer"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-xs-12 col-md-12">
+                                                <label class="control-label col-xs-12 col-sm-4 col-md-3">Time</label>
+                                                <div class="col-md-9">
+                                                    <span class="fl">:</span> <span id="siTime" style="padding-left: 4px;float: left;"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-xs-12 col-md-12">
+                                                <label class="control-label col-xs-12 col-sm-4 col-md-3">Uptime</label>
+                                                <div class="col-md-9" id="">
+                                                    : <span id="siUptime"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="panel panel-default fl minHeightWrap">
+									<div class="panel-heading">Network Parameters <a href="#"></a></div>
+										<div class="commonform">
+											<div class="form-group col-xs-12 col-md-12">
+												<label class="control-label col-xs-12 col-sm-4 col-md-3">Management IP</label>
+												<div class="col-sm-4">
+													: <span id="mIP"></span>
+												</div>
+											</div>
+											<!--<div class="form-group col-xs-12 col-md-12">
+												<label class="control-label col-xs-12 col-sm-4 col-md-5">Management MAC</label>
+												<div class="col-sm-4">
+													:
+												</div>
+											</div>-->
+											<div class="form-group col-xs-12 col-md-12">
+												<label class="control-label col-xs-12 col-sm-4 col-md-3">Bridging</label>
+												<div class="col-sm-7">
+                                                    <span class="fl">:</span> <span id="bridgeName" style="padding-left: 4px;float: left;width: 30%"></span> 
+												</div>
+											</div>
+								
+											<div class="form-group col-xs-12 col-md-12">
+												<label class="control-label col-xs-12 col-sm-4 col-md-3">Hardware Bypass</label>
+												<div class="col-sm-4">
+													: <span id="hardwareBypassStatus"></span>
+												</div>
+											</div>
+										</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+
+
+            </div>
+
+           
+
+        </section>
+    </div>
+
+
+
+<script>
+
+    document.getElementById("config").href=URL=URL_PREFIX + USER_CONFIG;
+    document.getElementById("sSettings").href=LOAD_SETTINGS;
+
+	//console.log(URL_PREFIX + "/user_page_load");
+        function userName() {
+                document.getElementById("logged-in-user").innerHTML = getCookie('userid');//localStorage.getItem('user');
+                GetHardwareBypass();
+                 GetBridging();              
+                 GetSystemInformation();
+                 GetManagementIP();
+        }
+
+	function postRequest(url, dat, requestName="", callback){
+                console.log(requestName + ' port url :' + url);
+                 //send xmlHttpRequest
+                var xhr = new XMLHttpRequest();
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == XHR_DONE ){
+                        if(xhr.status == HTTP_OK ){
+                            console.log(requestName + ' request http ok');
+                        }
+                    }
+                    else{
+                        console.log(requestName + ' readyState :',xhr.readyState);
+                    }
+
+                }
+                xhr.onload = function() {
+                //executed when request sending done and response received
+                console.log(requestName + ' xhr.status : '+xhr.status);
+                let responseObj = xhr.response;
+               // console.log(xhr.response);
+                callback(xhr.status, responseObj);
+                   /* if(xhr.status == 200 || xhr.status == 201){
+
+                    }
+                    else{
+
+                    }*/
+                };
+		xhr.onerror = function() { // only triggers if the request couldn't be made at all
+                    console.log(`Network Error`);
+                };
+
+                xhr.open('post',url,true);
+                xhr.setRequestHeader('Content-Type','application/json');
+                //xhr.setRequestHeader('Authorization',"Basic "+getBasicAuth());
+                xhr.withCredentials = true;
+                xhr.send(JSON.stringify(dat));
+            };
+
+    function getUserName(){
+            //return localStorage.getItem('user');
+            return getCookie("userid");
+
+        };
+        
+    function getPassword(){
+            return localStorage.getItem('password');
+        };
+
+        function getBasicAuth(){
+            var a = window.btoa(`${getUserName()}:${getPassword()}`);
+            return a;
+        };
+
+	function factory_reset(){
+            let cMessage = 'Do you really want to perform factory reset? This process cannot be undone';
+            confirmBox(cMessage, (val) => {
+                if(!val){
+                    return;
+                }
+                var url = "/rest/v1/managers/actions/resetToDefault";
+                var dat = {};
+                console.log('Going for Factory Reset');
+                console.log(dat);
+                postRequest(url,dat, "FactoryReset", function(status, responseObj){
+                    if(status == 200 || status == 201){
+                            responseObj = JSON.parse(responseObj);
+                            alert("Factory Reset Successful");
+                    }
+                    else {
+                    // console.log(responseObj);
+                    }
+                });
+            });
+            
+        };
+
+	function reboot()
+        {
+            let customMessage = 'Going to Reboot the system. Confirm ?';
+            confirmBox(customMessage, (val) => {
+                if(!val){
+                    return;
+                }
+                console.log('Going for Reboot....');
+                let xhr = new XMLHttpRequest();
+                let url = "/rest/v1/managers/actions/reboot";;
+                console.log('url called :'+url);
+                xhr.onload = function(){
+                    console.log('xhr.status in reboot : '+xhr.status);
+
+                };
+                xhr.onerror = function(){
+                    console.log('error occured in lanbypass');
+                };
+
+                //open request
+                xhr.open('POST',url,true);
+                xhr.setRequestHeader('Content-Type','application/json');
+                //xhr.setRequestHeader('Authorization',"Basic "+getBasicAuth());
+                xhr.withCredentials = true;
+                xhr.send(JSON.stringify({}));
+
+                // display overlay screen
+                document.getElementById('overlay').style.display = 'block';
+                setTimeout(function(){
+                    //alert("Timer expired and page redirected");
+                    console.log('Timer has expired so redirected the page');
+                    document.getElementById('overlay').style.display = 'none';
+                    window.location.href = '/';
+                }, 60000);
+            });
+            
+        };
+
+	function logout()
+        {
+            let customMessage = 'You are going to logout. Are you sure?';
+            confirmBox(customMessage, (val) => {
+                if(!val){
+                    return;
+                }
+                //code which will be executed on confirmation
+                var url = `/rest/v1/session/${getUserName()}/actions/delete`;
+                console.log('Logging out the current user');
+                var dat = {};
+                postRequest(url,dat, "Logout", function(status,res){
+                    if (status==200 || status ==201)
+                    {
+                        console.log('success');
+                        //resObj = JSON.parse(res);
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('password');
+                        window.location.href='/';//sending to login page
+                    }
+                    else {
+                        console.log('failed');
+                        resObj = JSON.parse(res);
+                    // console.log(res);
+                        alert(resObj.message);
+                    }
+                });
+
+            });
+            
+        };
+
+
+            function GetHardwareBypass(){
+                let xhr = new XMLHttpRequest();
+                let url = "/rest/v1/network/config/lanbypass";
+                console.log('url called :'+url);
+                xhr.onload = function(){
+                    console.log('xhr.status in HARDWAREBYPASSGET : '+xhr.status);
+                    var hadB = document.getElementById('hardwareBypassStatus');
+
+                    if(xhr.status == 200 || xhr.status == 201){
+                       // console.log(xhr.response);
+                        console.log('response in HardwareBypass success');
+                        resObj = JSON.parse(xhr.response);
+                       // console.log(resObj);
+                        
+                        //hadB.innerHTML = '<span class="green">' +resObj.status +'</span>';
+                        if(resObj.status == 'enabled'){
+
+                                hadB.innerHTML = '<span class="green"><b>ON</b></span>';
+                        } else if(resObj.status == 'disabled'){
+                                hadB.innerHTML = '<span class="red"><b>OFF</b></span>';
+
+                        }
+
+                    }
+                    
+                    else{
+                       // console.log(xhr.response);
+                        console.log('response in HardwareBypass failure');
+                    }
+                };
+                xhr.onerror = function(){
+                    console.log('error occured in HardwareBypass');
+                };
+
+                //open request
+                xhr.open('get',url,true);
+                xhr.setRequestHeader('Content-Type','application/json');
+                //xhr.setRequestHeader('Authorization',"Basic "+getBasicAuth());
+                xhr.withCredentials = true;
+                xhr.send();
+             };
+
+
+
+            function GetManagementIP(){
+                console.log('GetManagementIP');
+               
+                // logic to display ip according to members value
+                
+                let xhr = new XMLHttpRequest();
+                let url = "/rest/v1/network/state/interface";
+                console.log('url called :'+url);
+                xhr.onload = function(){
+                    console.log('xhr.status in Management IP : '+xhr.status);
+                    var manageIP = document.getElementById('mIP');
+
+                    if(xhr.status == 200 || xhr.status == 201){
+
+                        let nxhr = new XMLHttpRequest();
+                        let nurl = "/rest/v1/network/config/bridge";
+
+                        nxhr.onload = function(){
+                            if(nxhr.status == 200 || nxhr.status==201){
+                                // logic to display ip according to members value
+                                let flag=false;
+                                membersData = JSON.parse(nxhr.response);
+                                interfaceData = JSON.parse(xhr.response);
+                                console.log('members data');
+                                console.log(membersData);
+                                console.log('interface data');
+                                console.log(interfaceData);
+                                for(let key in membersData['members']){
+                                    if(membersData['members'][`${key}`]){
+                                        flag = true;
+                                        break;
+                                    }
+                                }
+                                if(flag){
+                                    //show br0 IP address
+                                    //document.getElementById('mIP').innerHTML = interfaceData['br0']['IPADDR'];
+                                    document.getElementById('mIP').innerHTML = `<span>${interfaceData['br0']['ipaddress']}</span> <span> (br0)</span>`;
+                                }
+                                else{
+                                    //show IP of first key in interface
+                                    let keyArray = Object.keys(interfaceData);
+                                    //document.getElementById('mIP').innerHTML = interfaceData[`${keyArray[0]}`]['IPADDR'];
+                                    document.getElementById('mIP').innerHTML = `<span>${interfaceData[`${keyArray[0]}`]['ipaddress']}</span> <span> (${keyArray[0]})</span>`;
+                                }
+                            }
+
+                        };
+                        nxhr.onerror = function(){
+                            console.log('error in getting bridge');
+                        };
+                        nxhr.open('get',nurl,true);
+                        nxhr.setRequestHeader('Content-Type','application/json');
+                        //xhr.setRequestHeader('Authorization',"Basic "+getBasicAuth());
+                        nxhr.withCredentials = true;
+                        nxhr.send();
+
+
+                    }
+                    
+                    else{
+                     //   console.log(xhr.response);
+                        console.log('response in Management IP failure');
+                    }
+                };
+                xhr.onerror = function(){
+                    console.log('error occured in Management IP');
+                };
+
+                //open request
+                xhr.open('get',url,true);
+                xhr.setRequestHeader('Content-Type','application/json');
+                //xhr.setRequestHeader('Authorization',"Basic "+getBasicAuth());
+                xhr.withCredentials = true;
+                xhr.send();
+             };
+
+
+            function GetBridging(){
+
+                console.log('GetBridging');
+                let xhr = new XMLHttpRequest();
+                let url = "/rest/v1/network/config/bridge";
+                console.log('url called :'+url);
+                xhr.onload = function(){
+                    console.log('xhr.status in Bridging : '+xhr.status);
+                    var brD = document.getElementById('bridgeName');
+
+                    if(xhr.status == 200 || xhr.status == 201){
+                      //  console.log(xhr.response);
+                        console.log('response in Bridging success');
+                        resObj = JSON.parse(xhr.response);
+                       // console.log(resObj);
+                        
+                        var objj = resObj['members'];
+                        //objj = JSON.stringify(objj);
+                        let ht=``;
+
+
+                        for(let key in objj ){
+                            if(objj[`${key}`]=="true"){
+                                
+                                ht +=`<span style="float:left;width:80%;">${key}</span> <span class="green" style="float:left;width:20%;">ON</span><br>`;
+                            }
+                            
+                            else{
+                               ht +=`<span style="float:left;width:80%;">${key}</span> <span class="red" style="float:left;width:20%;">OFF</span><br>`;
+ 
+                            }
+                                                    }
+                        
+                        brD.innerHTML = ht;
+
+                        /*for(let key in resObj['members'] ){
+
+                        brD.innerHTML = '<span class="green">' +resObj['members'][`${key}`] +'</span>';
+
+                    }*/
+                        /*if(resObj.status == 'enabled'){
+
+                                brD.innerHTML = '<span class="green"><b>ON</b></span>';
+                        } else if(resObj.status == 'disabled'){
+                                brD.innerHTML = '<span class="red"><b>OFF</b></span>';
+
+                        }*/
+
+                    }
+                    
+                    else{
+                     //   console.log(xhr.response);
+                        console.log('response in Bridging failure');
+                    }
+                };
+                xhr.onerror = function(){
+                    console.log('error occured in Bridging');
+                };
+
+                //open request
+                xhr.open('get',url,true);
+                xhr.setRequestHeader('Content-Type','application/json');
+                //xhr.setRequestHeader('Authorization',"Basic "+getBasicAuth());
+                xhr.withCredentials = true;
+                xhr.send();
+             };
+
+
+function GetSystemInformation(){
+    let xhr = new XMLHttpRequest();
+    let url = "/rest/v1/system/state/information";
+    console.log('url called :'+url);
+    xhr.onload = function(){
+        console.log('xhr.status in Name : '+xhr.status);
+
+
+        if(xhr.status == 200 || xhr.status == 201){
+          //  console.log(xhr.response);
+            console.log('response in Name success');
+            resObj = JSON.parse(xhr.response);
+            console.log(resObj["name"]);
+
+            document.getElementById("siName").innerHTML = resObj["name"];
+            document.getElementById("siDes").innerHTML = resObj["description"];
+            document.getElementById("siLocation").innerHTML = resObj["location"];
+            document.getElementById("siFirmVer").innerHTML = resObj["firmwareVersion"];
+            document.getElementById("siTime").innerHTML = resObj["time"];
+            document.getElementById("siUptime").innerHTML = resObj["uptime"];
+
+            }
+
+        else{
+            alert("Failure");
+           // console.log(xhr.response);
+            console.log('response in name failure'); 
+        }
+       }
+
+    xhr.onerror = function(){
+        console.log('error occured in username');
+    };
+
+    //open request
+    xhr.open('get',url,true);
+    xhr.setRequestHeader('Content-Type','application/json');
+    //xhr.setRequestHeader('Authorization',"Basic "+getBasicAuth());
+    xhr.withCredentials = true;
+    xhr.send();
+};
+
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+     var c = ca[i];
+     while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+     }
+     if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+     }
+  }  
+  return "";
+};
+
+
+//function to display confirm box
+function confirmBox(message, cb){
+    $("#deletemodel").modal('show');
+    document.getElementById('dialogMessage').innerHTML = message;
+    $("#confirmButton").on("click", function(){
+        $("#deletemodel").modal('hide');
+        cb(true);
+    });
+    $("#cancelButton").on("click", function(){
+        $("#deletemodel").modal('hide');
+        cb(false);
+    });
+};
+
+
+
+</script>
+
+<script src="{{url_for('static', filename='Application/js/jquery-2.1.1.min.js') }}"></script>
+<script src="{{url_for('static', filename='Application/js/bootstrap.min.js') }}"></script>
+<script src="{{url_for('static', filename='Application/js/jquery.metisMenu.js') }}"></script>
+<script src="{{url_for('static', filename='Application/js/custom-scripts.js') }}"></script>
+
+</body>
+</html>
